@@ -15,7 +15,6 @@ RUN mvn dependency:go-offline -Dmaven.repo.remote=https://maven.aliyun.com/repos
 
 # 5. 复制源代码
 COPY src ./src
-COPY pom.xml .
 
 # 6. 编译打包
 RUN mvn clean package -DskipTests
