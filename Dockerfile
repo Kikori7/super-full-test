@@ -1,6 +1,6 @@
 # 1. 基础镜像：使用微软官方提供的 Playwright Java 镜像
 # 包含 JDK 11、Maven 以及 Playwright 运行所需的所有系统依赖
-FROM mcr.microsoft.com/playwright/java:v1.40.0-jammy
+FROM registry.cn-hangzhou.aliyuncs.com/microsoft/java-playwright:v1.40.0-jammy
 
 # 2. 设置工作目录
 WORKDIR /app
@@ -15,7 +15,7 @@ RUN mvn dependency:go-offline -Dmaven.repo.remote=https://maven.aliyun.com/repos
 
 # 5. 复制源代码
 COPY src ./src
-COPY src/main/resources/testng.xml .
+COPY pom.xml .
 
 # 6. 编译打包
 RUN mvn clean package -DskipTests
