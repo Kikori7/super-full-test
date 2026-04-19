@@ -11,7 +11,7 @@ COPY pom.xml .
 
 # 4. 下载依赖
 # 这一步会下载 Maven 依赖和 Playwright 浏览器（如果在基础镜像里还没装好）
-RUN mvn dependency:go-offline
+RUN mvn dependency:go-offline -Dmaven.repo.remote=https://maven.aliyun.com/repository/public
 
 # 5. 复制源代码
 COPY src ./src
