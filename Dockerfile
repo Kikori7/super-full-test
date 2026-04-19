@@ -15,7 +15,7 @@ RUN mvn dependency:go-offline
 
 # 5. 复制源代码
 COPY src ./src
-COPY testng.xml .
+COPY src/test/resources/testng.xml .
 
 # 6. 编译打包
 RUN mvn clean package -DskipTests
