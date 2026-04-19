@@ -1,0 +1,14 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="MyTestSuite" parallel="methods" thread-count="3" verbose="2">
+<!--    <test name="RegressionTests">-->
+
+<!--    </test>-->
+<!--    <listeners>-->
+<!--        <listener class-name="org.example.common.PlaywrightScreenshotListener"/>-->
+<!--    </listeners>-->
+    <test name="Simulate100Users" >
+        <classes>
+            <class name="org.example.BaiDuTest"/>
+        </classes>
+    </test>
+</suite>
