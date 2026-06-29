@@ -1,0 +1,30 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<!--
+  重试框架 — DynamicRetryAnalyzer + ConditionalRetryTransformer
+
+  参数配置：
+    testng.xml: <parameter name="retryMax" value="3"/>
+    Maven CLI:  mvn test -Dtest.retry.enabled=false
+               mvn test -Dtest.retry.max=5 -Dtest.retry.delay.ms=500
+
+  Listener 顺序：RetryConfigListener 必须在 ConditionalRetryTransformer 之前
+-->
+<suite name="RetryDemoSuite" verbose="1">
+
+    <parameter name="retryEnabled" value="true"/>
+    <parameter name="retryMax" value="2"/>
+    <parameter name="retryDelayMs" value="0"/>
+
+    <listeners>
+        <listener class-name="org.example.base.retry.RetryConfigListener"/>
+        <listener class-name="org.example.base.retry.ConditionalRetryTransformer"/>
+    </listeners>
+
+    <test name="RetryDemo">
+        <classes>
+            <class name="org.example.RetryDemoTest"/>
+        </classes>
+    </test>
+
+</suite>

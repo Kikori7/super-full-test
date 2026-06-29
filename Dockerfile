@@ -19,6 +19,8 @@ COPY src ./src
 # 6. 编译打包
 RUN mvn clean package -DskipTests
 
-# 7. 容器启动命令：运行 TestNG 测试
-# 测试报告通常会生成在 target/surefire-reports 或 target/allure-results
+# 7. 容器启动命令（默认全量测试，可 docker run 时覆盖）：
+#    docker run image                          → 全量测试
+#    docker run image mvn test -Dtest=某个类     → 指定测试类
+#    docker run image mvn test -DsuiteXmlFile=... → 指定 suite
 CMD ["mvn", "test"]
