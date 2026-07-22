@@ -40,10 +40,12 @@
             <artifactId>testng</artifactId>
             <version>7.10.2</version>
         </dependency>
+        <!-- logback 1.2.x 兼容 SLF4J 1.7.x（TestNG 引的版本），
+             不要升到 1.4.x，会跟 SLF4J 1.x 的 StaticLoggerBinder 不兼容 -->
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.4.14</version>
+            <version>1.2.13</version>
         </dependency>
         <!--    <dependency>-->
         <!--      <groupId>org.junit.jupiter</groupId>-->

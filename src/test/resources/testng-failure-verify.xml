@@ -1,0 +1,16 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<!-- 临时验证套件：验证失败截图链路，验证后可删除 -->
+<suite name="FailureCaptureVerifySuite" verbose="2">
+
+    <listeners>
+        <listener class-name="org.example.base.listener.FailureListener"/>
+    </listeners>
+
+    <test name="FailureCaptureVerify">
+        <classes>
+            <class name="org.example.FailureSnapshotVerifyTest"/>
+        </classes>
+    </test>
+
+</suite>
