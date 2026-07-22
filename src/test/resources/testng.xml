@@ -19,6 +19,7 @@
     <listeners>
         <listener class-name="org.example.base.retry.RetryConfigListener"/>
         <listener class-name="org.example.base.retry.ConditionalRetryTransformer"/>
+        <listener class-name="org.example.base.listener.FailureListener"/>
     </listeners>
 
     <test name="RetryDemo">

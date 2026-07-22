@@ -1,26 +1,24 @@
-# 1. 基础镜像：使用微软官方提供的 Playwright Java 镜像
-# 包含 JDK 11、Maven 以及 Playwright 运行所需的所有系统依赖
+# 1. 基础镜像：包含 JDK 11、Maven 以及 Playwright 浏览器依赖
 FROM mcr.microsoft.com/playwright/java:v1.40.0-jammy
 
 # 2. 设置工作目录
 WORKDIR /app
 
-# 3. 先复制 pom.xml (利用 Docker 缓存机制)
-# 如果 pom.xml 没变，Docker 会直接使用缓存的依赖层，极大加快构建速度
+# 3. 先复制 pom.xml（利用 Docker 缓存）
 COPY pom.xml .
 
-# 4. 下载依赖
-# 这一步会下载 Maven 依赖和 Playwright 浏览器（如果在基础镜像里还没装好）
+# 4. 下载项目依赖
 RUN mvn dependency:go-offline -Dmaven.repo.remote=https://maven.aliyun.com/repository/public
 
 # 5. 复制源代码
 COPY src ./src
 
-# 6. 编译打包
-RUN mvn clean package -DskipTests
+# 6. 编译 + 下载测试插件（-DskipTests = 编译但不执行）
+#    test 阶段会触发 surefire 插件解析，把 surefire-testng 等 JAR 下载到本地仓库
+RUN mvn clean test -DskipTests
 
-# 7. 容器启动命令（默认全量测试，可 docker run 时覆盖）：
-#    docker run image                          → 全量测试
-#    docker run image mvn test -Dtest=某个类     → 指定测试类
-#    docker run image mvn test -DsuiteXmlFile=... → 指定 suite
-CMD ["mvn", "test"]
+# 7. 容器启动：只执行测试，不走完整生命周期（插件已缓存，无需重新下载）
+#    docker run image                                    → 全量测试
+#    docker run image mvn surefire:test -Dtest=某个类       → 指定测试类
+#    docker run image mvn surefire:test -DsuiteXmlFile=... → 指定 suite
+CMD ["mvn", "surefire:test"]

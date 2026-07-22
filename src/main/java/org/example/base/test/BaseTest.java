@@ -62,7 +62,13 @@ public abstract class BaseTest {
 
     /** 每个 @Test 独立的 BrowserContext */
     private final ThreadLocal<BrowserContext> threadContext = new ThreadLocal<>();
-    private final ThreadLocal<Page> threadPage = new ThreadLocal<>();
+    /** 每个 @Test 独立的 Page — 静态以允许 FailureListener 在 @AfterMethod 之前获取 */
+    private static final ThreadLocal<Page> threadPage = new ThreadLocal<>();
+
+    /** 供 FailureListener 在 onTestFailure 时获取当前 Page（@AfterMethod 之前 Page 仍存活） */
+    public static Page currentPage() {
+        return threadPage.get();
+    }
 
     // ======================== 子类覆盖配置 ========================
 
@@ -97,12 +103,20 @@ public abstract class BaseTest {
         return true;
     }
 
+    /**
+     * 当真实登录被跳过时（shouldPerformLogin=false 或登录失败），
+     * 用此脚本注入假 token。子类覆盖即可。
+     */
+    protected String getAuthInitScript() {
+        return null;
+    }
+
     // ======================== Suite 级：登录一次，到处复用 ========================
 
     @BeforeSuite
     public void suiteLogin() {
         if (!shouldPerformLogin()) {
-            log.info("⏭️ 跳过真实登录（shouldPerformLogin=false）");
+            log.info("⏭️ 跳过真实登录（shouldPerformLogin=false），将使用 getAuthInitScript 兜底");
             return;
         }
 
@@ -112,20 +126,16 @@ public abstract class BaseTest {
         try {
             log.info("===== Suite 级登录开始 =====");
 
-            // 1. 创建临时 Context 用于登录
             loginContext = browser.newContext(getContextOptions());
             Page loginPage = loginContext.newPage();
 
-            // 2. 打开应用 → 自动跳转登录页
             loginPage.navigate(getBaseUrl());
             loginPage.waitForLoadState(
                     com.microsoft.playwright.options.LoadState.NETWORKIDLE);
 
-            // 3. 执行真实 UI 登录
             LoginPage login = new LoginPage(loginPage);
             login.login(getTestUsername(), getTestPassword());
 
-            // 4. 导出登录态（cookies + localStorage + sessionStorage）
             loginContext.storageState(
                     new BrowserContext.StorageStateOptions()
                             .setPath(AUTH_STATE_PATH));
@@ -135,8 +145,8 @@ public abstract class BaseTest {
             log.info("===== Suite 级登录完成 =====");
 
         } catch (Exception e) {
-            log.error("❌ Suite 级登录失败: {}", e.getMessage());
-            throw new RuntimeException("登录失败，后续用例无法执行", e);
+            log.error("❌ Suite 级登录失败: {}，将使用 getAuthInitScript 兜底", e.getMessage());
+            loginCompleted = false;
         } finally {
             if (loginContext != null) {
                 loginContext.close();
@@ -156,18 +166,26 @@ public abstract class BaseTest {
         StepContext.init(testName);
         log.info("━━━ {} ━━━ 开始", testName);
 
-        // 2. 创建 BrowserContext（如果已有登录态则加载，否则裸创建）
+        // 2. 创建 BrowserContext
         BrowserContext context;
         if (loginCompleted && java.nio.file.Files.exists(AUTH_STATE_PATH)) {
-            // 复用登录态 — 这个 Context 自带 cookies + token
+            // 复用真实登录态
             context = browser.newContext(
                     getContextOptions().setStorageStatePath(AUTH_STATE_PATH));
             log.debug("🔐 加载已有登录态");
         } else {
+            // 无真实登录态 → 裸创建
             context = browser.newContext(getContextOptions());
             log.debug("📄 裸创建 Context（无登录态）");
         }
         Page page = context.newPage();
+
+        // 3. 如果跳过了真实登录，注入假 token 兜底
+        String authScript = getAuthInitScript();
+        if (!loginCompleted && authScript != null && !authScript.isBlank()) {
+            page.addInitScript(authScript);
+            log.debug("🔐 已注入 initScript token");
+        }
 
         threadContext.set(context);
         threadPage.set(page);
@@ -178,6 +196,9 @@ public abstract class BaseTest {
         String testName = method.getDeclaringClass().getSimpleName()
                 + "." + method.getName();
 
+        // 失败截图由 FailureListener.onTestFailure 处理（它在 @AfterMethod 之前触发，Page 存活时截图）
+
+        // 关闭本用例的 BrowserContext
         try {
             BrowserContext context = threadContext.get();
             if (context != null) {
