@@ -4,8 +4,9 @@ FROM mcr.microsoft.com/playwright/java:v1.40.0-jammy
 # 2. 设置工作目录
 WORKDIR /app
 
-# 3. 先复制 pom.xml（利用 Docker 缓存）
+# 3. 先复制 pom.xml + 配置文件（利用 Docker 缓存）
 COPY pom.xml .
+COPY email.properties.example email.properties
 
 # 4. 下载项目依赖
 RUN mvn dependency:go-offline -Dmaven.repo.remote=https://maven.aliyun.com/repository/public
@@ -17,8 +18,8 @@ COPY src ./src
 #    test 阶段会触发 surefire 插件解析，把 surefire-testng 等 JAR 下载到本地仓库
 RUN mvn clean test -DskipTests
 
-# 7. 容器启动：只执行测试，不走完整生命周期（插件已缓存，无需重新下载）
+# 7. 容器启动：执行测试（用 lifecycle phase 复用缓存依赖）
 #    docker run image                                    → 全量测试
-#    docker run image mvn surefire:test -Dtest=某个类       → 指定测试类
-#    docker run image mvn surefire:test -DsuiteXmlFile=... → 指定 suite
-CMD ["mvn", "surefire:test"]
+#    docker run image mvn test -Dtest=某个类                → 指定测试类
+#    docker run image mvn test -DsuiteXmlFile=...          → 指定 suite
+CMD ["mvn", "test"]

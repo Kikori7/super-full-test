@@ -5,6 +5,7 @@
 
     <listeners>
         <listener class-name="org.example.base.listener.FailureListener"/>
+        <listener class-name="org.example.base.listener.ReportEmailListener"/>
     </listeners>
 
     <test name="FailureCaptureVerify">

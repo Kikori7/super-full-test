@@ -84,7 +84,25 @@ public abstract class BaseTest {
                 .setLocale("zh-CN");
     }
 
+    /**
+     * 被测系统地址.
+     *
+     * <p>优先级：系统属性 {@code base.url} → 环境变量 {@code BASE_URL} → 默认值
+     *
+     * <p>Docker 容器中需要让容器能访问宿主机的后端：
+     * <pre>{@code
+     * # 方式一：host 网络模式（推荐）
+     * docker run --network host ... kikosong/super-full-test:latest
+     *
+     * # 方式二：环境变量指定
+     * docker run -e BASE_URL=http://10.0.0.5:8080 ... kikosong/super-full-test:latest
+     * }</pre>
+     */
     protected String getBaseUrl() {
+        String fromProp = System.getProperty("base.url");
+        if (fromProp != null && !fromProp.isBlank()) return fromProp;
+        String fromEnv = System.getenv("BASE_URL");
+        if (fromEnv != null && !fromEnv.isBlank()) return fromEnv;
         return "http://localhost:8080";
     }
 
