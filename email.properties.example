@@ -1,0 +1,13 @@
+# ============================================================
+# 测试报告邮件配置（模板）
+# 复制为 email.properties 并填入真实值
+# 服务器：~/email.properties mount 到容器
+#   docker run ... -v ~/email.properties:/app/email.properties ...
+# ============================================================
+
+email.enabled=false
+email.smtp.host=smtp.163.com
+email.smtp.port=465
+email.from=你的邮箱@163.com
+email.password=你的163邮箱SMTP授权码
+email.to=接收报告的邮箱
