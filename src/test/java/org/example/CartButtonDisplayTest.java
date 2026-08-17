@@ -26,16 +26,29 @@ import java.util.List;
  */
 public class CartButtonDisplayTest extends BaseTest {
 
-    // ======================== 测试账号（覆盖 BaseTest 默认值） ========================
+    // ======================== 测试账号（真实登录，账密可外部覆盖） ========================
 
+    /**
+     * 真实测试账号。优先级：{@code -Dtest.username} > 环境变量 {@code TEST_USERNAME} > 默认值。
+     * 默认值写死真实测试账号，服务器 cron 无需额外配置即可登录。
+     */
     @Override
     protected String getTestUsername() {
-        return "testuser";          // ← 换成你后端真实的测试账号
+        String prop = System.getProperty("test.username");
+        if (prop != null && !prop.isBlank()) return prop;
+        String env = System.getenv("TEST_USERNAME");
+        if (env != null && !env.isBlank()) return env;
+        return "Kiko";
     }
 
+    /** 真实测试密码。优先级：{@code -Dtest.password} > 环境变量 {@code TEST_PASSWORD} > 默认值。 */
     @Override
     protected String getTestPassword() {
-        return "123456";            // ← 换成密码
+        String prop = System.getProperty("test.password");
+        if (prop != null && !prop.isBlank()) return prop;
+        String env = System.getenv("TEST_PASSWORD");
+        if (env != null && !env.isBlank()) return env;
+        return "huihui123456789+";
     }
 
     // ======================== Mock 数据（购物车列表） ========================
