@@ -26,8 +26,7 @@ public class LoginPage extends BasePage {
     private final String passwordSelector = "#l-pass";
     private final String loginButtonSelector = "#auth-form button.btn-primary";
 
-    // 登录成功标志 — 顶部 TAB 栏出现
-    private final String tabsSelector = ".tabs";
+    // 登录成功标志 — 登录表单从 DOM 消失（不能用 .tabs：登录/注册的 tab 栏也是 .tabs，会误判）
 
     public LoginPage(Page page) {
         super(page);
@@ -49,9 +48,9 @@ public class LoginPage extends BasePage {
         // 点击登录按钮
         click(find(loginButtonSelector));
 
-        // 等待登录完成 — TAB 栏出现表示登录成功
-        waitForVisible(tabsSelector);
-        log.info("✅ 登录成功 — TAB 栏已出现");
+        // 等待登录完成 — 登录成功后前端 render() 会重绘 #app，登录表单(#l-user)从 DOM 消失
+        waitForDetached(find(usernameSelector));
+        log.info("✅ 登录成功 — 登录表单已消失");
     }
 
     /** 是否已显示登录表单 */
