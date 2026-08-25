@@ -1,0 +1,37 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<!--
+  购物车 API 自动化测试套件
+
+  与 UI 套件(testng.xml)的区别：
+    - 复用 RetryConfigListener / ConditionalRetryTransformer / ReportEmailListener（框架层通用）
+    - 不注册 FailureListener（它依赖 Playwright Page，API 测试没有浏览器，会 NPE）
+
+  运行方式：
+    mvn test -DsuiteXmlFile=src/test/resources/testng-api.xml -Dbase.url=http://43.139.0.133:8080
+-->
+<suite name="ShoppingCartApiSuite" verbose="1">
+
+    <parameter name="retryEnabled" value="true"/>
+    <parameter name="retryMax" value="1"/>
+    <parameter name="retryDelayMs" value="0"/>
+
+    <listeners>
+        <listener class-name="org.example.base.retry.RetryConfigListener"/>
+        <listener class-name="org.example.base.retry.ConditionalRetryTransformer"/>
+        <listener class-name="org.example.base.listener.ReportEmailListener"/>
+    </listeners>
+
+    <test name="AuthApi">
+        <classes>
+            <class name="org.example.api.AuthApiTest"/>
+        </classes>
+    </test>
+
+    <test name="CartApi">
+        <classes>
+            <class name="org.example.api.CartApiTest"/>
+        </classes>
+    </test>
+
+</suite>
