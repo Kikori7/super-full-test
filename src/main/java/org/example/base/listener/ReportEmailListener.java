@@ -165,7 +165,7 @@ public class ReportEmailListener implements IReporter {
                 ? String.format("%.1f%%", s.passed * 100.0 / s.total) : "N/A";
         String color = s.failed > 0 ? "#e74c3c" : "#27ae60";
         String verdict = s.failed > 0 ? "❌ 有失败用例" : "✅ 全部通过";
-        String now = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+        String now = beijingTimeFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
         String duration = "";
         if (s.startDate != null && s.endDate != null) {
             long sec = Duration.between(s.startDate.toInstant(), s.endDate.toInstant()).getSeconds();
@@ -256,7 +256,7 @@ public class ReportEmailListener implements IReporter {
                 .map(String::trim).filter(s -> !s.isEmpty())
                 .collect(Collectors.toList());
 
-        String now = new SimpleDateFormat("MM-dd HH:mm").format(new Date());
+        String now = beijingTimeFormat("MM-dd HH:mm").format(new Date());
         String prefix = stats.failed > 0 ? "❌" : "✅";
         String subject = base64Encode(
                 String.format("%s 购物车测试报告 %s — 通过 %d/%d",
@@ -343,6 +343,18 @@ public class ReportEmailListener implements IReporter {
 
     private static String base64Encode(String s) {
         return Base64.getEncoder().encodeToString(s.getBytes(StandardCharsets.UTF_8));
+    }
+
+    /**
+     * 返回使用北京时间(Asia/Shanghai)的日期格式化器.
+     *
+     * <p>容器默认 UTC 时区，若直接用 {@code new SimpleDateFormat(...).format(new Date())}，
+     * 报告里的"执行时间"会差 8 小时（早上 7 点显示成 23 点）。
+     */
+    private static SimpleDateFormat beijingTimeFormat(String pattern) {
+        SimpleDateFormat sdf = new SimpleDateFormat(pattern);
+        sdf.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+        return sdf;
     }
 
     // ======================== 辅助 ========================

@@ -47,6 +47,12 @@
             <artifactId>logback-classic</artifactId>
             <version>1.2.13</version>
         </dependency>
+        <!-- RestAssured：API 接口自动化（compile scope，api.base 包需编译期可见，与 TestNG 同理） -->
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <version>5.4.0</version>
+        </dependency>
         <!--    <dependency>-->
         <!--      <groupId>org.junit.jupiter</groupId>-->
         <!--      <artifactId>junit-jupiter-api</artifactId>-->
@@ -123,9 +129,9 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.3.0</version>
                 <configuration>
-                    <!-- 指定 testng.xml 路径 -->
+                    <!-- 通过 profile 选择套件：默认 ui(testng.xml)，-Papi 切到 API 套件(testng-api.xml) -->
                     <suiteXmlFiles>
-                        <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
+                        <suiteXmlFile>${suite.xml}</suiteXmlFile>
                     </suiteXmlFiles>
                     <!--
                         系统属性透传：Maven 命令行 -D 参数自动传递给测试 JVM。
@@ -140,4 +146,23 @@
             </plugin>
         </plugins>
     </build>
+
+    <!-- 套件选择：mvn test 跑 UI 套件；mvn test -Papi 跑 API 套件 -->
+    <profiles>
+        <profile>
+            <id>ui</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <suite.xml>src/test/resources/testng.xml</suite.xml>
+            </properties>
+        </profile>
+        <profile>
+            <id>api</id>
+            <properties>
+                <suite.xml>src/test/resources/testng-api.xml</suite.xml>
+            </properties>
+        </profile>
+    </profiles>
 </project>
